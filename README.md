@@ -31,8 +31,11 @@
 | 模块 | 已提供能力 | 扩展方向 |
 | --- | --- | --- |
 | 企业官网 | 响应式首页、服务介绍、品牌占位内容 | CMS、新闻、SEO、国际化 |
-| 客户门户 | 受保护功能的页面和交互边界 | 账户资料、工单、文件中心 |
-| 边缘 API | 健康检查、Bearer Token 验证示例 | 业务路由、限流、审计日志 |
+| 客户门户 | 项目、报价、订单、发票和服务请求界面 | 实时业务数据、文件中心 |
+| 客户资料 | 企业背景、需求与沟通偏好表单 | CRM 同步、资料审核流程 |
+| 智能客服 | 通用知识回复、AI 翻译和人工转接骨架 | 知识库、实时坐席、质量审计 |
+| 员工后台 | 客户服务队列与最小权限说明 | 角色管理、内容管理、报表 |
+| 边缘 API | 登录、注册、资料保存与客服路由 | 限流、审计日志、通知任务 |
 | 身份与数据 | Supabase Auth 集成、Profile 表、RLS | 角色权限、组织隔离、MFA |
 | 安全基线 | CSP、安全响应头、环境变量模板 | WAF、Bot 防护、监控告警 |
 | 工程质量 | Node 原生测试、静态扫描、GitHub Actions | E2E、依赖审计、部署门禁 |
@@ -81,13 +84,18 @@ company-platform-starter/
 │   └── SECURITY.md                # 上线前安全检查清单
 ├── functions/
 │   └── api/
-│       ├── health.js              # 无状态健康检查接口
-│       └── profile.js             # Token 验证与用户资料接口示例
+│       ├── auth/                   # 登录与注册的服务端代理
+│       ├── support/                # 客服、翻译和人工转接接口
+│       ├── _shared.js              # API 校验与 Supabase 公共工具
+│       ├── customer-profile.js     # 客户资料保存接口
+│       ├── health.js               # 无状态健康检查接口
+│       └── profile.js              # Token 验证接口示例
 ├── scripts/
 │   └── check-site.mjs             # 必需文件与常见敏感信息扫描
 ├── supabase/
 │   └── migrations/
-│       └── 0001_profiles.sql      # Profile 表、约束与用户级 RLS
+│       ├── 0001_profiles.sql      # 基础 Profile 表与 RLS
+│       └── 0002_customer_service_platform.sql # 客户资料与客服队列
 ├── test/
 │   └── profile.test.mjs           # API 认证边界的 Node 原生测试
 ├── .env.example                   # 仅含占位值的环境变量模板
@@ -97,7 +105,13 @@ company-platform-starter/
 ├── _headers                       # CSP 等 Pages 响应头
 ├── _routes.json                   # Pages Functions 路由范围
 ├── index.html                     # 公共企业官网示例
-├── portal.html                    # 客户门户占位页面
+├── login.html                     # 登录与注册
+├── customer-profile.html          # 普通企业客户资料表单
+├── portal.html                    # 中小企业业务协作门户
+├── admin.html                     # 员工工作台骨架
+├── mail.html                      # 云邮件集成与鸣谢
+├── app.js                         # 浏览器会话与 API 工具
+├── support-widget.js              # AI 客服、翻译和转接组件
 ├── styles.css                     # 可换肤的全局视觉系统
 ├── package.json                   # 脚本、运行时版本和项目信息
 └── wrangler.jsonc                 # Cloudflare Pages 配置
@@ -133,7 +147,7 @@ SUPABASE_PUBLISHABLE_KEY=sb_publishable_replace_me
 
 `.dev.vars` 已被 Git 忽略。不要把真实密钥写入 HTML、提交记录、日志、Issue 或公开文档。
 
-执行 `supabase/migrations/0001_profiles.sql` 初始化最小 Profile 表和 RLS，然后启动本地站点：
+按顺序执行 `supabase/migrations/` 中的迁移，初始化 Profile、客户资料和客服请求表，然后启动本地站点：
 
 ```bash
 npx wrangler pages dev .
@@ -142,9 +156,17 @@ npx wrangler pages dev .
 常用入口：
 
 - `/`：企业官网示例
-- `/portal.html`：客户门户示例
+- `/login.html`：登录与注册
+- `/customer-profile.html`：普通客户资料填写
+- `/portal.html`：项目、报价、订单和服务请求概览
+- `/admin.html`：员工工作台骨架
+- `/mail.html`：云邮件集成说明与上游鸣谢
 - `/api/health`：健康检查
 - `/api/profile`：需要 Bearer Token 的认证接口示例
+
+## 云邮件鸣谢
+
+企业邮箱集成设计参考了 [maillab/cloud-mail](https://github.com/maillab/cloud-mail)。特别感谢创作者 **eoao** 与所有贡献者以 MIT License 开源该项目。本仓库不复制上游源代码；详情见 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
 
 ## 可用命令
 
@@ -181,4 +203,3 @@ npm run ci      # 依次执行测试和静态检查
 ## 开源许可
 
 本项目采用 [MIT License](LICENSE)。你可以使用、修改和分发本项目，但生产部署和衍生业务的安全与合规责任由采用者承担。
-

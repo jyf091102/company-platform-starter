@@ -5,10 +5,9 @@
   "type": "module",
   "description": "Sanitized company website and customer portal starter",
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test \"test/*.test.mjs\"",
     "check": "node scripts/check-site.mjs",
     "ci": "npm test && npm run check"
   },
   "engines": { "node": ">=20" }
 }
-

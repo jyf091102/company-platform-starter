@@ -1,4 +1,3 @@
-
 import { readFile, readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,9 +26,8 @@ for (const file of await files(root)) {
   const text = data.toString('utf8');
   for (const pattern of blocked) if (pattern.test(text)) failures.push(`${relative(root, file)}: ${pattern}`);
 }
-for (const required of ['index.html','portal.html','_headers','README.md','LICENSE']) {
+for (const required of ['index.html','login.html','customer-profile.html','portal.html','admin.html','mail.html','support-widget.js','_headers','README.md','LICENSE']) {
   try { await readFile(join(root, required)); } catch { failures.push(`missing ${required}`); }
 }
 if (failures.length) { console.error(failures.join('\n')); process.exit(1); }
 console.log('Static and secret checks passed.');
-
