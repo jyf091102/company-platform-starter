@@ -1,0 +1,14 @@
+{
+  "name": "company-platform-starter",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sanitized company website and customer portal starter",
+  "scripts": {
+    "test": "node --test test/",
+    "check": "node scripts/check-site.mjs",
+    "ci": "npm test && npm run check"
+  },
+  "engines": { "node": ">=20" }
+}
+
