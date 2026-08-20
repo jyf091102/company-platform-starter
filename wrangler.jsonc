@@ -2,6 +2,6 @@
   "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
   "name": "company-platform-starter",
   "compatibility_date": "2026-08-01",
-  "pages_build_output_dir": "."
+  "pages_build_output_dir": ".",
+  "ai": { "binding": "AI" }
 }
-
