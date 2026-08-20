@@ -1,53 +1,184 @@
 # Company Platform Starter
 
-一个经过脱敏的企业官网与客户门户骨架，面向 Cloudflare Pages、Pages Functions 和 Supabase。
+面向现代企业官网与客户门户的安全起步模板。
 
-本仓库只包含可复用架构和演示数据，不包含原项目的公司名称、人员、联系方式、域名、媒体、客户数据、生产项目 ID、密钥或 Git 历史。
+它把品牌展示、客户入口、边缘 API、身份验证边界和数据库行级权限组织在一个足够小、容易理解的仓库中。你可以把它作为新项目的技术底座，再按业务需要加入内容管理、工单、资料中心或其他受保护功能。
 
-## 能力
+> 本仓库是经过彻底脱敏的通用项目骨架，仅包含示例品牌和演示数据，不含真实公司资料、人员信息、客户数据、生产域名、项目 ID、访问凭据或来源项目历史。
 
-- 响应式企业官网与门户占位页
-- 中性暖灰与绿色视觉主题，可通过 CSS 变量快速换肤
-- Cloudflare Pages Functions 健康检查和受控 API 示例
-- Supabase 表结构与 Row Level Security 示例
-- 安全响应头、最小路由配置和 GitHub Actions CI
-- 零依赖静态检查与单元测试
+## 为什么使用它
+
+企业网站通常会从静态宣传页逐渐扩展出登录、资料、数据查询和后台接口。如果缺少清晰边界，前端配置、用户身份和数据库权限很容易混在一起。本项目提供一条明确的演进路径：
+
+- Cloudflare Pages 托管公共页面，保持简单、快速和低成本。
+- Pages Functions 承担服务端逻辑，不在浏览器中保存服务端密钥。
+- Supabase Auth 管理用户身份，API 在每次请求中验证访问令牌。
+- PostgreSQL Row Level Security 是最终数据授权边界。
+- GitHub Actions 持续执行测试和敏感信息检查。
+
+## 适用场景
+
+- 企业官网、工作室网站或产品介绍站
+- 带登录入口的客户服务门户
+- Cloudflare Pages + Supabase 概念验证
+- 需要安全基线、CI 和 RLS 示例的内部原型
+- 从纯静态页面逐步演进到轻量全栈应用的团队
+
+本模板不直接提供支付、KYC、邮件服务器、投资交易、医疗数据等高风险业务实现。这些能力必须根据具体业务和适用法规独立设计。
+
+## 核心能力
+
+| 模块 | 已提供能力 | 扩展方向 |
+| --- | --- | --- |
+| 企业官网 | 响应式首页、服务介绍、品牌占位内容 | CMS、新闻、SEO、国际化 |
+| 客户门户 | 受保护功能的页面和交互边界 | 账户资料、工单、文件中心 |
+| 边缘 API | 健康检查、Bearer Token 验证示例 | 业务路由、限流、审计日志 |
+| 身份与数据 | Supabase Auth 集成、Profile 表、RLS | 角色权限、组织隔离、MFA |
+| 安全基线 | CSP、安全响应头、环境变量模板 | WAF、Bot 防护、监控告警 |
+| 工程质量 | Node 原生测试、静态扫描、GitHub Actions | E2E、依赖审计、部署门禁 |
+| 视觉系统 | 暖灰与绿色中性主题、CSS 变量 | 品牌色、组件库、暗色模式 |
+
+## 系统架构
+
+```text
+┌──────────────────────┐
+│      Web Browser     │
+│ Public UI + User JWT │
+└──────────┬───────────┘
+           │ HTTPS
+           ▼
+┌──────────────────────┐
+│   Cloudflare Pages   │
+│ Static HTML and CSS  │
+└──────────┬───────────┘
+           │ /api/*
+           ▼
+┌──────────────────────┐
+│   Pages Functions    │
+│ Validate + Authorize │
+└──────────┬───────────┘
+           │ authenticated request
+           ▼
+┌──────────────────────┐
+│       Supabase       │
+│ Auth + Postgres RLS  │
+└──────────────────────┘
+```
+
+浏览器负责展示和携带短期用户会话，Functions 负责验证请求，RLS 负责限制数据访问。任何一层都不能单独代替其他层的授权检查。
+
+详细设计见 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)，发布前清单见 [`docs/SECURITY.md`](docs/SECURITY.md)。
+
+## 文件架构
+
+```text
+company-platform-starter/
+├── .github/
+│   └── workflows/
+│       └── ci.yml                 # GitHub Actions：测试与静态检查
+├── docs/
+│   ├── ARCHITECTURE.md            # 系统边界、数据流与扩展原则
+│   └── SECURITY.md                # 上线前安全检查清单
+├── functions/
+│   └── api/
+│       ├── health.js              # 无状态健康检查接口
+│       └── profile.js             # Token 验证与用户资料接口示例
+├── scripts/
+│   └── check-site.mjs             # 必需文件与常见敏感信息扫描
+├── supabase/
+│   └── migrations/
+│       └── 0001_profiles.sql      # Profile 表、约束与用户级 RLS
+├── test/
+│   └── profile.test.mjs           # API 认证边界的 Node 原生测试
+├── .env.example                   # 仅含占位值的环境变量模板
+├── .gitignore                     # 排除依赖、构建物和本地凭据
+├── LICENSE                        # MIT 开源许可证
+├── README.md                      # 项目入口与使用说明
+├── _headers                       # CSP 等 Pages 响应头
+├── _routes.json                   # Pages Functions 路由范围
+├── index.html                     # 公共企业官网示例
+├── portal.html                    # 客户门户占位页面
+├── styles.css                     # 可换肤的全局视觉系统
+├── package.json                   # 脚本、运行时版本和项目信息
+└── wrangler.jsonc                 # Cloudflare Pages 配置
+```
+
+### 目录职责
+
+- `functions/`：服务端逻辑区域。新增接口时同步补充身份验证、输入校验、错误处理和测试。
+- `supabase/migrations/`：数据库结构的唯一事实来源，避免只在控制台手动修改生产结构。
+- `test/`：验证授权边界；新增接口应覆盖匿名、合法用户和越权访问场景。
+- `scripts/`：存放可重复执行的质量检查，包括常见密钥格式扫描。
+- `docs/`：记录跨模块决策、安全假设和部署要求。
+- 根目录页面：保持无构建步骤的静态前端，便于快速部署和改造。
 
 ## 快速开始
 
-需要 Node.js 20+。
+需要 Node.js 20+、一个开发用 Supabase 项目，以及可选的 Cloudflare 账号。
 
 ```bash
-npm test
-npm run check
+git clone https://github.com/jyf091102/company-platform-starter.git
+cd company-platform-starter
+npm run ci
+```
+
+项目没有运行时 npm 依赖，因此无需先执行 `npm install`。
+
+复制 `.env.example` 为 `.dev.vars`，并填入独立开发项目的配置：
+
+```dotenv
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_replace_me
+```
+
+`.dev.vars` 已被 Git 忽略。不要把真实密钥写入 HTML、提交记录、日志、Issue 或公开文档。
+
+执行 `supabase/migrations/0001_profiles.sql` 初始化最小 Profile 表和 RLS，然后启动本地站点：
+
+```bash
 npx wrangler pages dev .
 ```
 
-复制 `.env.example` 为 `.dev.vars`，填入你自己的测试项目配置。不要提交 `.dev.vars` 或任何真实密钥。
+常用入口：
 
-## 目录
+- `/`：企业官网示例
+- `/portal.html`：客户门户示例
+- `/api/health`：健康检查
+- `/api/profile`：需要 Bearer Token 的认证接口示例
 
-```text
-index.html                 官网演示
-portal.html                客户门户占位页
-functions/api/health.js    健康检查
-functions/api/profile.js   认证 API 骨架
-supabase/migrations/       最小数据模型与 RLS
-scripts/check-site.mjs     脱敏与完整性检查
-test/                      单元测试
-docs/ARCHITECTURE.md       架构说明
-docs/SECURITY.md           安全与部署清单
+## 可用命令
+
+```bash
+npm test        # 执行 Node 原生单元测试
+npm run check   # 检查必需文件与常见敏感信息
+npm run ci      # 依次执行测试和静态检查
 ```
 
-## 部署
+## 部署流程
 
-1. 创建独立 Supabase 项目并执行迁移。
-2. 在 Cloudflare Pages 中配置 `SUPABASE_URL` 和 `SUPABASE_PUBLISHABLE_KEY`。
-3. 将 Pages 输出目录设为仓库根目录；Functions 会自动加载。
-4. 部署前运行 `npm run ci`，并启用 GitHub secret scanning 与 Dependabot。
+1. 创建互相隔离的开发、预发布和生产 Supabase 项目。
+2. 在目标数据库执行经过审核的迁移。
+3. 在 Cloudflare Pages 中连接仓库，输出目录设为仓库根目录。
+4. 在 Cloudflare 项目设置中添加所需环境变量。
+5. 确认 `npm run ci` 和 GitHub Actions 通过后再部署。
+6. 上线前启用分支保护、MFA、secret scanning、依赖更新、日志和告警。
 
-本项目是技术模板，不提供法律、合规、金融或数据保护建议。生产使用前应按适用地区完成独立审查。
+## 自定义指南
 
-## License
+- 在 `index.html` 和 `portal.html` 中替换 `Example Company` 和演示文案。
+- 在 `styles.css` 的 `:root` 中修改主题变量。
+- 新增静态资源前确认公开分发权，并移除图片元数据。
+- 新增数据表时默认启用 RLS，先验证默认拒绝，再开放最小权限。
+- 新增 API 时不要信任浏览器传来的用户 ID、角色或资源归属。
+- 高风险业务功能应由安全、隐私和法律专业人员独立评审。
 
-MIT
+## 安全边界
+
+本仓库只提供安全起点，不宣称开箱即用地满足任何行业认证或地区法规。Supabase publishable key 可以出现在客户端，但仍必须依赖正确的 RLS；服务角色密钥、私钥和第三方 API 密钥必须始终留在服务端。
+
+发现漏洞时，请使用 GitHub Security Advisory 私下报告，不要在公开 Issue 中粘贴凭据、日志或个人数据。
+
+## 开源许可
+
+本项目采用 [MIT License](LICENSE)。你可以使用、修改和分发本项目，但生产部署和衍生业务的安全与合规责任由采用者承担。
+
